@@ -14,6 +14,12 @@
 		2480632D2583AE54005305AF /* GitHubUsersChallenge.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2480632B2583AE54005305AF /* GitHubUsersChallenge.xcdatamodeld */; };
 		2480632F2583AE58005305AF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2480632E2583AE58005305AF /* Assets.xcassets */; };
 		248063322583AE58005305AF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 248063302583AE58005305AF /* LaunchScreen.storyboard */; };
+		248063412583F146005305AF /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 248063402583F146005305AF /* DetailViewController.swift */; };
+		2480634325850E2E005305AF /* UserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2480634225850E2E005305AF /* UserCell.swift */; };
+		24806345258517DA005305AF /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24806344258517DA005305AF /* ImageCache.swift */; };
+		2480634725852472005305AF /* UsersModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2480634625852472005305AF /* UsersModel.swift */; };
+		2480635E25868DD0005305AF /* UserProfiles+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2480635A25868DD0005305AF /* UserProfiles+CoreDataClass.swift */; };
+		2480636025868DD0005305AF /* UsersList+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2480635C25868DD0005305AF /* UsersList+CoreDataClass.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +32,12 @@
 		2480632E2583AE58005305AF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		248063312583AE58005305AF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		248063332583AE58005305AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		248063402583F146005305AF /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
+		2480634225850E2E005305AF /* UserCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCell.swift; sourceTree = "<group>"; };
+		24806344258517DA005305AF /* ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
+		2480634625852472005305AF /* UsersModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsersModel.swift; sourceTree = "<group>"; };
+		2480635A25868DD0005305AF /* UserProfiles+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserProfiles+CoreDataClass.swift"; sourceTree = "<group>"; };
+		2480635C25868DD0005305AF /* UsersList+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UsersList+CoreDataClass.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,8 +71,12 @@
 			isa = PBXGroup;
 			children = (
 				248063222583AE54005305AF /* AppDelegate.swift */,
+				248063392583C4C6005305AF /* model */,
 				248063242583AE54005305AF /* SceneDelegate.swift */,
 				248063262583AE54005305AF /* ViewController.swift */,
+				2480634225850E2E005305AF /* UserCell.swift */,
+				24806344258517DA005305AF /* ImageCache.swift */,
+				248063402583F146005305AF /* DetailViewController.swift */,
 				248063282583AE54005305AF /* Main.storyboard */,
 				2480632E2583AE58005305AF /* Assets.xcassets */,
 				248063302583AE58005305AF /* LaunchScreen.storyboard */,
@@ -68,6 +84,24 @@
 				2480632B2583AE54005305AF /* GitHubUsersChallenge.xcdatamodeld */,
 			);
 			path = GitHubUsersChallenge;
+			sourceTree = "<group>";
+		};
+		248063392583C4C6005305AF /* model */ = {
+			isa = PBXGroup;
+			children = (
+				248063642586CF92005305AF /* coreData */,
+			);
+			path = model;
+			sourceTree = "<group>";
+		};
+		248063642586CF92005305AF /* coreData */ = {
+			isa = PBXGroup;
+			children = (
+				2480635A25868DD0005305AF /* UserProfiles+CoreDataClass.swift */,
+				2480635C25868DD0005305AF /* UsersList+CoreDataClass.swift */,
+				2480634625852472005305AF /* UsersModel.swift */,
+			);
+			path = coreData;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -142,9 +176,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				248063272583AE54005305AF /* ViewController.swift in Sources */,
+				24806345258517DA005305AF /* ImageCache.swift in Sources */,
 				248063232583AE54005305AF /* AppDelegate.swift in Sources */,
+				2480636025868DD0005305AF /* UsersList+CoreDataClass.swift in Sources */,
+				248063412583F146005305AF /* DetailViewController.swift in Sources */,
 				248063252583AE54005305AF /* SceneDelegate.swift in Sources */,
 				2480632D2583AE54005305AF /* GitHubUsersChallenge.xcdatamodeld in Sources */,
+				2480635E25868DD0005305AF /* UserProfiles+CoreDataClass.swift in Sources */,
+				2480634325850E2E005305AF /* UserCell.swift in Sources */,
+				2480634725852472005305AF /* UsersModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -291,6 +331,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = B34RQ28Z5L;
 				INFOPLIST_FILE = GitHubUsersChallenge/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -309,6 +350,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = B34RQ28Z5L;
 				INFOPLIST_FILE = GitHubUsersChallenge/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
