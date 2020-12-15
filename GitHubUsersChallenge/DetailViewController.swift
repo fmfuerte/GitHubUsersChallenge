@@ -28,6 +28,7 @@ class DetailViewController: UIViewController {
     var userProfile:UserProfiles?
     
      var container = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,6 +52,11 @@ class DetailViewController: UIViewController {
         emailTextField.text = userProfile?.email ?? ""
         blogTextField.text = userProfile?.blog ?? ""
         notesTextView.text = userProfile?.notes ?? ""
+        
+        bioTextView.layer.borderWidth = 1
+        bioTextView.layer.borderColor = UIColor.lightGray.cgColor
+        notesTextView.layer.borderWidth = 1
+        notesTextView.layer.borderColor = UIColor.lightGray.cgColor
         
         
     }
@@ -103,7 +109,8 @@ class DetailViewController: UIViewController {
             // Check the cachemanager before downloading any image data
             if let imageData = ImageCache.loadImage(urlString) {
                 // There is image data, set the imageview and return
-                self.avatarImageView!.image = UIImage(data: imageData)
+                
+                self.avatarImageView!.maskCircle(UIImage(data: imageData)!)
                 return
             }
             
@@ -134,7 +141,7 @@ class DetailViewController: UIViewController {
                                
                                DispatchQueue.main.async {
                                    // Display the image data in the image view
-                                    self.avatarImageView!.image = UIImage(data: data!)
+                                self.avatarImageView.maskCircle(UIImage(data: data!)!)
                                 
                                }
                         }

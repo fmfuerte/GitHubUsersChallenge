@@ -17,7 +17,7 @@ class UserCell: UITableViewCell {
     func displayUser(_ user:UsersList,_ inverted:Bool) {
         // Clean up the cell before displaying the next article
         self.imageView!.image = nil
-       // userImageView.alpha = 0
+        self.accessoryView = nil
         self.textLabel!.text = ""
         self.detailTextLabel!.text = ""
         
@@ -31,8 +31,10 @@ class UserCell: UITableViewCell {
         if let name = userToDisplay!.profile?.name {
             self.detailTextLabel!.text = userToDisplay!.type! + " - " + name
         }
-        if (userToDisplay!.profile?.notes?.count ?? 0) > 0 {
+        if( userToDisplay!.profile?.notes != nil){
+            if (userToDisplay!.profile?.notes?.count ?? 0) > 1 {
                 self.accessoryView =  UIImageView(image: UIImage(systemName: "square.and.pencil"))
+            }
         }
         
         //load the image
@@ -47,13 +49,16 @@ class UserCell: UITableViewCell {
             // Check the cachemanager before downloading any image data
             if let imageData = ImageCache.loadImage(urlString) {
                 // There is image data, set the imageview and return
+                let image:UIImage
                 if(inverted){
-                    self.imageView!.image = invertImage(UIImage(data: imageData)!)
+                    image = invertImage(UIImage(data: imageData)!)
                 }
                 else{
-                    self.imageView!.image = UIImage(data: imageData)
+                    image = UIImage(data: imageData)!
                 }
+                self.imageView!.image = image
                 self.setNeedsLayout()
+                self.setNeedsDisplay()
                 return
             }
             
@@ -84,15 +89,16 @@ class UserCell: UITableViewCell {
                                
                                DispatchQueue.main.async {
                                    // Display the image data in the image view
+                                let image:UIImage
                                 if(inverted){
-                                    self.imageView!.image = self.invertImage(UIImage(data: data!)!)
+                                    image = self.invertImage(UIImage(data: data!)!)
                                 }
                                 else{
-                                    self.imageView!.image = UIImage(data: data!)
+                                    image = UIImage(data: data!)!
                                 }
-                                //self.userImageView.image = UIImage(data: data!)
-                                
+                                self.imageView!.image = image
                                 self.setNeedsLayout()
+                                self.setNeedsDisplay()
                                }
                         }
                                
@@ -136,4 +142,16 @@ class UserCell: UITableViewCell {
         // Configure the view for the selected state
     }
     
+}
+
+extension UIImageView {
+  public func maskCircle(_ image: UIImage) {
+    self.contentMode = UIView.ContentMode.scaleAspectFill
+    self.layer.cornerRadius = self.frame.height / 2
+    self.layer.masksToBounds = false
+    self.clipsToBounds = true
+
+   self.image = image
+    self.setNeedsLayout()
+  }
 }

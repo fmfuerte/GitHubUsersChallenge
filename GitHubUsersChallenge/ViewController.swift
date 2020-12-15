@@ -11,8 +11,7 @@ import CoreData
 import Foundation
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UsersModelProtocol {
-    
-    
+   
     var container = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
     
     var contentView: UIView! = UIView()
@@ -24,7 +23,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     var users = [UsersList]()
     var profiles = [UserProfiles]()
-
+    
+    
+    var timerCount = 10
+    
+   
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -43,6 +47,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             usersModel.getUsersList(0)
         }
         
+        
         //Set up programmatic UI
         self.view.addSubview(contentView)
                
@@ -55,6 +60,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     override func viewWillAppear(_ animated: Bool) {
         fetchInitialData()
     }
+    
+   
     
     func fetchInitialData() {
             let request: NSFetchRequest<UsersList> = UsersList.fetchRequest()
@@ -181,6 +188,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             if let searchterm = searchBar?.text  { //if not in search mode
             if searchterm == "" {
                 if indexPath.row == self.users.count - 1 {
+                    
                     self.tableView.addLoading(indexPath) {
                         self.usersModel.getUsersList(Int(self.users.last!.id))
                     }
@@ -192,6 +200,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         return cell
         
     }
+    
     
     
     
@@ -214,16 +223,17 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 
     }
     
+    func showAlert(_ message: String, _ buttonStyle: UIAlertAction.Style) {
+         self.tableView.stopLoading()
+        
+           let alert = UIAlertController(title: "Information", message: message, preferredStyle: .alert)
+
+           alert.addAction(UIAlertAction(title: "Ok", style: buttonStyle, handler: nil))
+
+           self.present(alert, animated: true)
+           
+       }
     
-    func profileRetrieved(_ profile: UserProfiles) {
-        if self.profiles.contains(profile) {
-            self.profiles[Int(profile.id)] = profile
-        }
-    }
-    
-    func profilesRetrieved(_ profiles: [UserProfiles]) {
-        self.profiles = profiles
-    }
     
     //Set up UI Programmatically
     
@@ -313,6 +323,7 @@ func indicatorView() -> UIActivityIndicatorView{
 
 func addLoading(_ indexPath:IndexPath, closure: @escaping (() -> Void)){
     indicatorView().startAnimating()
+    
     if let lastVisibleIndexPath = self.indexPathsForVisibleRows?.last {
         if indexPath == lastVisibleIndexPath && indexPath.row == self.numberOfRows(inSection: 0) - 1 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {

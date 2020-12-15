@@ -14,6 +14,8 @@ import CoreData
 protocol UsersModelProtocol {
     
     func usersRetrieved(_ users:[UsersList])
+    
+    func showAlert(_ message:String,_ buttonStyle:UIAlertAction.Style)
 }
 
 class UsersModel {
@@ -41,8 +43,11 @@ class UsersModel {
     
     
       var urlReq = URLRequest(url: url!, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 5)
+    
+    let token1 = "d3e8d1031e3ff816b8d8"
+    let token2 = "aff222783d05e58119b4"
             
-        urlReq.addValue("token da28274eb5e02e4e8b01c2aefd89b0f62f65da7c", forHTTPHeaderField: "Authorization")
+        urlReq.addValue("token " + token1 + "" + token2, forHTTPHeaderField: "Authorization")
        
        // Check that it isn't nil
        guard url != nil else {
@@ -50,10 +55,16 @@ class UsersModel {
            return
        }
        
-        URLSession.shared.configuration.httpMaximumConnectionsPerHost = 1
     
        // Get the URL Session
        let session = URLSession.shared
+    
+    session.configuration.httpMaximumConnectionsPerHost = 1
+    
+    session.configuration.timeoutIntervalForResource = 60
+    
+    session.configuration.waitsForConnectivity = true
+   
     
        // Create the data task
     let dataTask = session.dataTask(with: urlReq) { (data, response, error) in
@@ -94,10 +105,18 @@ class UsersModel {
                    */
                }
                catch {
-                   print("Error parsing the json "  + error.localizedDescription)
+                DispatchQueue.main.async {
+                self.delegate?.showAlert("An error occurred while parsing the json: \(error)", .destructive)
+                }
+                
                } // End Do - Catch
                
            } // End if
+           else{
+            DispatchQueue.main.async {
+            self.delegate?.showAlert("An error occurred while loading the network", .destructive)
+            }
+        }
            
     } // End Data Task
        
@@ -119,7 +138,7 @@ class UsersModel {
                 
                 var urlReq = URLRequest(url: url!, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 20)
                     
-                urlReq.addValue("token da28274eb5e02e4e8b01c2aefd89b0f62f65da7c", forHTTPHeaderField: "Authorization")
+                urlReq.addValue("token d3e8d1031e3ff816b8d8aff222783d05e58119b4", forHTTPHeaderField: "Authorization")
            
            // Check that it isn't nil
            guard url != nil else {
@@ -127,10 +146,15 @@ class UsersModel {
                return
            }
                 
-        URLSession.shared.configuration.httpMaximumConnectionsPerHost = 1
         
         // Get the URL Session
         let session = URLSession.shared
+                
+        session.configuration.httpMaximumConnectionsPerHost = 1
+                
+        session.configuration.timeoutIntervalForResource = 30
+                
+        session.configuration.waitsForConnectivity = true
            
               // Create the data task
                 let dataTask = session.dataTask(with: urlReq) { (data, response, error) in
@@ -203,7 +227,9 @@ class UsersModel {
                 do {
                     try self.networkContext.save()
                 } catch {
-                    print("An error occurred while saving: \(error)")
+                    DispatchQueue.main.async {
+                        self.delegate?.showAlert("An error occurred while saving: \(error)", .destructive)
+                    }
                 }
             }
            
@@ -211,6 +237,7 @@ class UsersModel {
         }
         catch {
                 print("Error fetch")
+                
         }
         
     }
@@ -236,7 +263,14 @@ class UsersModel {
     }
     
     
+    func urlSession(_ session: URLSession, taskIsWaitingForConnectivity task: URLSessionTask) {
+        DispatchQueue.main.async {
+        self.delegate?.showAlert("Waiting for internet connection", .destructive)
+        }
+    }
+    
  
     
 
 }
+

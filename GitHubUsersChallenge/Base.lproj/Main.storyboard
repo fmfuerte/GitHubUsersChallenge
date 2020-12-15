@@ -51,9 +51,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="MCf-qs-QBy">
-                                <rect key="frame" x="0.0" y="88" width="414" height="200"/>
+                                <rect key="frame" x="107" y="88" width="200" height="200"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="200" id="Dsj-2u-Wg1"/>
+                                    <constraint firstAttribute="width" constant="200" id="Gpw-CK-uBw"/>
                                 </constraints>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vZL-7R-qxT" userLabel="follow">
@@ -261,8 +262,7 @@
                             <constraint firstItem="0yQ-3X-EXB" firstAttribute="trailing" secondItem="vZL-7R-qxT" secondAttribute="trailing" id="AE5-gW-8j0"/>
                             <constraint firstItem="sdC-wi-ind" firstAttribute="top" secondItem="svO-2f-2m2" secondAttribute="bottom" id="Dne-Gf-88h"/>
                             <constraint firstItem="MCf-qs-QBy" firstAttribute="top" secondItem="0yQ-3X-EXB" secondAttribute="top" id="GC5-CB-55R"/>
-                            <constraint firstItem="0yQ-3X-EXB" firstAttribute="trailing" secondItem="MCf-qs-QBy" secondAttribute="trailing" id="KHj-Fe-f0C"/>
-                            <constraint firstItem="MCf-qs-QBy" firstAttribute="leading" secondItem="0yQ-3X-EXB" secondAttribute="leading" id="Xx1-pe-gnP"/>
+                            <constraint firstItem="MCf-qs-QBy" firstAttribute="centerX" secondItem="ZLf-o1-aZG" secondAttribute="centerX" id="Uni-Jt-7wO"/>
                             <constraint firstItem="sdC-wi-ind" firstAttribute="bottom" secondItem="0yQ-3X-EXB" secondAttribute="bottom" id="aSk-Yg-gPf"/>
                             <constraint firstItem="0yQ-3X-EXB" firstAttribute="trailing" secondItem="sdC-wi-ind" secondAttribute="trailing" constant="100" id="cI8-il-Tew"/>
                             <constraint firstItem="svO-2f-2m2" firstAttribute="leading" secondItem="0yQ-3X-EXB" secondAttribute="leading" id="cor-sh-XuT"/>
