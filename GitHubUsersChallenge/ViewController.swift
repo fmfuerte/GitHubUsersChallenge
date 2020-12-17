@@ -19,13 +19,15 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     var searchBar: UITextField! = UITextField()
     var searchBtn: UIButton! = UIButton()
     
+    var errorHeader: UIView! = UIView()
+    var errorShown = false
+    
+    let refreshControl = UIRefreshControl()
+    
     var usersModel = UsersModel()
     
     var users = [UsersList]()
     var profiles = [UserProfiles]()
-    
-    
-    var timerCount = 10
     
    
     
@@ -40,30 +42,50 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         // Set the delegate from the UsersList model
         usersModel.delegate = self
         
-        //deleteSavedData()
-        fetchInitialData()
+        deleteSavedData()
+        fetchSavedData()
         
         if(users.count == 0){
             usersModel.getUsersList(0)
         }
         
-        
+      
         //Set up programmatic UI
         self.view.addSubview(contentView)
                
         setUpContent()
+        
+        //add pull to refresh
+        tableView.addSubview(refreshControl)
                
+        //add actions
         searchBtn.addTarget(self, action: #selector(self.searchButtonPress), for: .touchUpInside)
+        refreshControl.addTarget(self, action:  #selector(refresh), for: .valueChanged)
+              
         
     }
     
+    //fetch the saved data when view will appear
     override func viewWillAppear(_ animated: Bool) {
-        fetchInitialData()
+        fetchSavedData()
+    }
+
+    @objc func refresh(){
+        //check if the error message was shown
+        if(errorShown){
+            errorHeaderWillHide()
+        }
+    
+        refreshControl.beginRefreshing()
+        fetchSavedData()
+        if(users.count == 0){
+            usersModel.getUsersList(0)
+        }
     }
     
    
-    
-    func fetchInitialData() {
+    //fetch the saved data
+    func fetchSavedData() {
             let request: NSFetchRequest<UsersList> = UsersList.fetchRequest()
             let sort = NSSortDescriptor(key: "id", ascending: true)
             request.sortDescriptors = [sort]
@@ -72,6 +94,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 let data = try container.viewContext.fetch(request)
                                              
                 self.users = data
+                refreshControl.endRefreshing()
+                tableView.stopLoading()
+                
+                //relead the tableview
                 tableView.reloadData()
             } catch {
                 print("Fetch failed")
@@ -97,8 +123,46 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                
     }
     
+    
+    //show the error header
+    @objc func errorHeaderWillShow() {
+        //mark that the error was shown
+        errorShown = true
+        
+        //set up error header
+        errorHeader.frame =  CGRect(x: 0, y: -50, width: self.contentView.frame.width, height: 50)
+        errorHeader.backgroundColor = .red
+        
+        let errorLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.errorHeader.frame.width, height: 50) )
+        errorLabel.text = "Problem with Network. Pull to refresh"
+        errorLabel.textAlignment = .center
+        errorLabel.textColor = UIColor.white
+        
+        errorHeader.translatesAutoresizingMaskIntoConstraints = false
+        
+        errorHeader.addSubview(errorLabel)
+        
+        //add error header to contentview
+        self.contentView.addSubview(errorHeader)
+        
+        //move the content view down to acommodate error header
+        self.contentView.frame.origin.y = self.contentView.frame.origin.y + 50
+        
+        self.contentView.translatesAutoresizingMaskIntoConstraints = false
+       }
+
+    @objc func errorHeaderWillHide() {
+        //mark that the header is hidden
+        errorShown = false
+        
+        //remoce error header from content view
+        errorHeader.removeFromSuperview()
+        
+         // move back the content view back to normal
+         self.contentView.frame.origin.y = self.contentView.frame.origin.y - 50
+       }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-             
              // Detect the indexpath the user selected
              let indexPath = tableView.indexPathForSelectedRow
              
@@ -116,6 +180,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         // Get a reference to the detail view controller
         let detailVC = segue.destination as! DetailViewController
         
+        //get the title of the detail view controller to the username
         detailVC.navigationItem.title = userSelected!.login
         
         // Pass the user profile to the detail view controller
@@ -124,14 +189,14 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
     }
     
+    //set up the search button press logic
     @objc func searchButtonPress(){
-        
-        
         if let searchterm = searchBar?.text  {
             if searchterm != "" {
                 //search for a term based on username (login)
                 let request: NSFetchRequest<UsersList> = UsersList.fetchRequest()
-                let pred = NSPredicate(format: "login CONTAINS '"+searchterm+"' OR profile.notes CONTAINS %@", searchterm)
+                let pred = NSPredicate(format: "(login like '"+searchterm+"' OR login CONTAINS '"+searchterm+"') OR (profile.notes like '"+searchterm+"' OR profile.notes CONTAINS %@)", searchterm)
+                
                 request.predicate = pred
                 do {
                 // fetch is performed on the NSManagedObjectContext
@@ -160,8 +225,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             }
         }
         
-        
        }
+    
+    //set up the table view
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return users.count
@@ -202,29 +268,31 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     
-    
-    
-    
+    //set up the tableview selected row
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         // User has just selected a row, trigger the segue to go to detail
         performSegue(withIdentifier: "goToDetail", sender: self)
     }
     
-    func usersRetrieved(_ users: [UsersList]) {
-           // Set the track property of the view controller to the tracks passed back from the model
-                self.users = users
+    func usersRetrieved() {
+        //fetch new data
+        fetchSavedData()
                 
-            //store to CoreData
-           
-                // Refresh the tableview
-            tableView.stopLoading()
-               tableView.reloadData()
+        // Refresh the tableview
+        refreshControl.endRefreshing()
+        tableView.stopLoading()
+        tableView.reloadData()
                 
     }
     
+    //show alert protocol - used to show alertbox
     func showAlert(_ message: String, _ buttonStyle: UIAlertAction.Style) {
          self.tableView.stopLoading()
+        self.refreshControl.endRefreshing()
+        
+         errorHeaderWillShow()
+        
         
            let alert = UIAlertController(title: "Information", message: message, preferredStyle: .alert)
 
@@ -265,8 +333,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         searchBtn.heightAnchor.constraint(equalToConstant: 50).isActive = true
         searchBtn.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -20).isActive = true
         searchBtn.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20).isActive = true
-    //    searchBtn.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true
-      //  searchBtn.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
            
        }
     
@@ -282,21 +348,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         searchBar.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 20).isActive = true
         searchBar.rightAnchor.constraint(equalTo: searchBtn.leftAnchor, constant: -20).isActive = true
         searchBar.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20).isActive = true
-    //    searchBtn.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true
-      //  searchBtn.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
            
        }
     
-    func setUpTableView(){
+  
     
+    func setUpTableView(){
         tableView.translatesAutoresizingMaskIntoConstraints = false
                  
         tableView.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10).isActive = true
         tableView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: -10).isActive = true
         tableView.topAnchor.constraint(equalTo: searchBtn.bottomAnchor, constant: 20).isActive = true
         tableView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10).isActive = true
-    //    searchBtn.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true
-      //  searchBtn.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         tableView.register(UserCell.self, forCellReuseIdentifier: "UserCell")
        }
     
@@ -304,6 +367,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
 }
 
+//add a loading progress view to the tableview when scrolled to load more users
 extension UITableView{
 
 func indicatorView() -> UIActivityIndicatorView{

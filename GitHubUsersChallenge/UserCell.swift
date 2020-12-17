@@ -21,9 +21,11 @@ class UserCell: UITableViewCell {
         self.textLabel!.text = ""
         self.detailTextLabel!.text = ""
         
-        
         // Keep a reference to the user
         userToDisplay = user
+        
+        //self.textLabel?.textColor = UIColor.black
+       // self.detailTextLabel?.textColor = UIColor.black
         
         //set up the fields
         self.textLabel!.text = userToDisplay!.login
@@ -31,6 +33,14 @@ class UserCell: UITableViewCell {
         if let name = userToDisplay!.profile?.name {
             self.detailTextLabel!.text = userToDisplay!.type! + " - " + name
         }
+        if(userToDisplay!.profile?.seen != nil){
+            if(userToDisplay!.profile?.seen == true){
+                self.textLabel?.textColor = UIColor.lightGray
+                self.detailTextLabel?.textColor = UIColor.lightGray
+            }
+        }
+        
+        //check if theres a note, show note uimage on accessory view if there is
         if( userToDisplay!.profile?.notes != nil){
             if (userToDisplay!.profile?.notes?.count ?? 0) > 1 {
                 self.accessoryView =  UIImageView(image: UIImage(systemName: "square.and.pencil"))
@@ -39,7 +49,6 @@ class UserCell: UITableViewCell {
         
         //load the image
         self.loadImage(inverted)
-        
     }
     
     func loadImage(_ inverted:Bool){
@@ -61,7 +70,8 @@ class UserCell: UITableViewCell {
                 self.setNeedsDisplay()
                 return
             }
-            
+            else{
+            //if image is not in cache
             
              // Create the url
             let url = URL(string: userToDisplay!.avatar_url!)
@@ -110,9 +120,12 @@ class UserCell: UITableViewCell {
                    
                    // Kick off the datatask
                    dataTask.resume()
+                
+        }
         
     }
     
+    //invert the image color
     func invertImage(_ image:UIImage) -> UIImage {
         let beginImage = CIImage(image: image)
         let filter = CIFilter(name: "CIColorInvert")
@@ -144,14 +157,4 @@ class UserCell: UITableViewCell {
     
 }
 
-extension UIImageView {
-  public func maskCircle(_ image: UIImage) {
-    self.contentMode = UIView.ContentMode.scaleAspectFill
-    self.layer.cornerRadius = self.frame.height / 2
-    self.layer.masksToBounds = false
-    self.clipsToBounds = true
 
-   self.image = image
-    self.setNeedsLayout()
-  }
-}

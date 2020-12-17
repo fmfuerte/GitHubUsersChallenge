@@ -10,6 +10,7 @@ import UIKit
 
 class ImageCache {
     
+    //store image data to userdefaults using a temporary directory
     static func storeImage(_ urlString: String,_ data: Data){
         let path = NSTemporaryDirectory().appending(UUID().uuidString)
         let url = URL(fileURLWithPath: path)
@@ -29,9 +30,9 @@ class ImageCache {
         UserDefaults.standard.set(dict, forKey: "ImageCache")
         
     }
-    
+        
+    //load data from UserDefault if it exist based on url
     static func loadImage(_ urlString: String) -> Data?  {
-        //load data from UserDefault if it exist based on url
         if let dict = UserDefaults.standard.object(forKey: "ImageCache") as? [String:String] {
             
             if let path = dict[urlString]{

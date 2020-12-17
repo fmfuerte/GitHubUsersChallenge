@@ -13,27 +13,17 @@ import CoreData
 
 protocol UsersModelProtocol {
     
-    func usersRetrieved(_ users:[UsersList])
+    func usersRetrieved()
     
     func showAlert(_ message:String,_ buttonStyle:UIAlertAction.Style)
 }
 
 class UsersModel {
     
-    var container = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
     var networkContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
-    var networkProfileContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
-
    var delegate:UsersModelProtocol?
    
    func getUsersList(_ since:Int) {
-    
-    //check and load previous data if available
-  // self.loadSavedData()
-  //   self.deleteSavedData()
-       
-       // Fire off the request to the API
-       
        // Create a string URL
     let stringUrl = "https://api.github.com/users?since="+since.description
   
@@ -41,13 +31,10 @@ class UsersModel {
        // Create a URL object
        let url = URL(string: stringUrl)
     
-    
       var urlReq = URLRequest(url: url!, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 5)
     
-    let token1 = "d3e8d1031e3ff816b8d8"
-    let token2 = "aff222783d05e58119b4"
             
-        urlReq.addValue("token " + token1 + "" + token2, forHTTPHeaderField: "Authorization")
+        urlReq.addValue("token 95d270eeb0e76446a0cf5ff5663b62ac6fe12cd1", forHTTPHeaderField: "Authorization")
        
        // Check that it isn't nil
        guard url != nil else {
@@ -64,7 +51,6 @@ class UsersModel {
     session.configuration.timeoutIntervalForResource = 60
     
     session.configuration.waitsForConnectivity = true
-   
     
        // Create the data task
     let dataTask = session.dataTask(with: urlReq) { (data, response, error) in
@@ -79,30 +65,14 @@ class UsersModel {
                 // Assign the NSManagedObject Context to the decoder
                decoder.userInfo[CodingUserInfoKey.context!] = self.networkContext
                 
-                              
                 let LoadedUsers = try decoder.decode([UsersList].self, from: data!)
-                print("load "+LoadedUsers.count.description)
+                
                 self.saveContext(LoadedUsers)
                 
-                              // Move back on the main thread, as we call tableview.reload
-                              DispatchQueue.main.async {
-                            //    self.deleteSavedData()
-                                //  self.saveContext()
-                                self.loadSavedData()
-                              //  self.delegate?.usersRetrieved(users)
-                }
-                   /*
-                   // Parse the json into ArticleService
-                   let UsersService = try decoder.decode(UsersListService.self, from: data!)
-                   
-                   // Get the users
-                   let users = UsersService.results!
-                   
-                   // Pass it back to the view controller in the main thread
-                   DispatchQueue.main.async {
-                       self.delegate?.usersRetrieved(users)
-                   }
-                   */
+                        // Move back on the main thread, and load the saved Data, this will also trigger loading of profiles
+                        DispatchQueue.main.async {
+                            self.loadSavedData()
+                        }
                }
                catch {
                 DispatchQueue.main.async {
@@ -114,7 +84,7 @@ class UsersModel {
            } // End if
            else{
             DispatchQueue.main.async {
-            self.delegate?.showAlert("An error occurred while loading the network", .destructive)
+            self.delegate?.showAlert("An error occurred while loading the network. Connect to the internet and pull to refresh", .destructive)
             }
         }
            
@@ -125,7 +95,9 @@ class UsersModel {
  
    }
     
+    //load the profiles one by one
     func loadProfiles(_ list:[UsersList]){
+        
         
         for user in list{
             
@@ -138,7 +110,7 @@ class UsersModel {
                 
                 var urlReq = URLRequest(url: url!, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 20)
                     
-                urlReq.addValue("token d3e8d1031e3ff816b8d8aff222783d05e58119b4", forHTTPHeaderField: "Authorization")
+                urlReq.addValue("token 95d270eeb0e76446a0cf5ff5663b62ac6fe12cd1", forHTTPHeaderField: "Authorization")
            
            // Check that it isn't nil
            guard url != nil else {
@@ -167,7 +139,7 @@ class UsersModel {
                       
                       do {
                        // Assign the NSManagedObject Context to the decoder
-                        decoder.userInfo[CodingUserInfoKey.context!] = self.container.viewContext
+                        decoder.userInfo[CodingUserInfoKey.context!] = self.networkContext
                        
                         let LoadedProfile = try decoder.decode(UserProfiles.self, from: data!)
                        
@@ -175,14 +147,16 @@ class UsersModel {
                         user.profile!.seen = false
                         user.profile!.notes = ""
                        
-                        //save the profile of the user
-                          do {
-                              try self.container.viewContext.save()
-                          } catch {
-                              print("An error occurred while saving: \(error)")
-                          }
-                        DispatchQueue.main.async {
-                         self.delegate?.usersRetrieved(list)
+                        //save the loaded profiles context
+                        do {
+                            
+                            try self.networkContext.save()
+                            
+                            DispatchQueue.main.async {
+                                self.delegate?.usersRetrieved()
+                            }
+                        } catch {
+                            print("An error occurred while saving: \(error)")
                         }
                         
                       }
@@ -195,24 +169,19 @@ class UsersModel {
            } // End Data Task
               
               // Start the data task
-              dataTask.resume()
+                dataTask.resume()
             }
             
         }
-        
-        
-       
-       // print("prof2"+list[0].profile!.description)
         
     }
     
     func saveContext(_ LoadedUsers:[UsersList]) {
         let request: NSFetchRequest<UsersList> = UsersList.fetchRequest()
-        //  let sort = NSSortDescriptor(key: "id", ascending: true)
-         // request.sortDescriptors = [sort]
+        
           do {
               // fetch is performed on the NSManagedObjectContext
-            var data = try self.container.viewContext.fetch(request)
+            var data = try self.networkContext.fetch(request)
         
             let old = data.count //get the number of old data
            for user in LoadedUsers {
@@ -223,6 +192,7 @@ class UsersModel {
            }
             let new = data.count //get the number of new data
             
+            //if there is new data save the context
             if(old<new){
                 do {
                     try self.networkContext.save()
@@ -248,20 +218,17 @@ class UsersModel {
         let sort = NSSortDescriptor(key: "id", ascending: true)
         request.sortDescriptors = [sort]
         do {
-            // fetch is performed on the NSManagedObjectContext
-            let data = try container.viewContext.fetch(request)
+            // load data by fetching from context
+            let data = try networkContext.fetch(request)
             
             //load Profiles
             loadProfiles(data)
             
-            //refresh the tableview
-            self.delegate?.usersRetrieved(data)
             
         } catch {
             print("Fetch failed")
         }
     }
-    
     
     func urlSession(_ session: URLSession, taskIsWaitingForConnectivity task: URLSessionTask) {
         DispatchQueue.main.async {

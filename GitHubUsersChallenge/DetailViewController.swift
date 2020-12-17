@@ -27,18 +27,46 @@ class DetailViewController: UIViewController {
     var listIndex:Int?
     var userProfile:UserProfiles?
     
-     var container = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+    var detailContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
     
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        
+         // call the 'keyboardWillShow' function when the view controller receive the notification that a keyboard is going to be shown
+          NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        
+        // call the 'keyboardWillHide' function when the view controlelr receive notification that keyboard is going to be hidden
+          NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+
     }
     
+
+    @objc func keyboardWillShow(notification: NSNotification) {
+            
+        guard let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
+           // if keyboard size is not available for some reason, dont do anything
+           return
+        }
+      
+      // move the root view up by the distance of keyboard height
+      self.view.frame.origin.y = 0 - keyboardSize.height
+    }
+
+    @objc func keyboardWillHide(notification: NSNotification) {
+      // move back the root view origin to zero
+      self.view.frame.origin.y = 0
+    }
+    
+    //load data when view appears
     override func viewWillAppear(_ animated: Bool) {
         //load image
         loadImage()
+        
+        //set profile seen
+        setSeen()
         
         notesTextView.autocapitalizationType = .none
         
@@ -61,6 +89,31 @@ class DetailViewController: UIViewController {
         
     }
     
+    func setSeen(){
+        do{
+        let request: NSFetchRequest<UsersList> = UsersList.fetchRequest()
+        let sort = NSSortDescriptor(key: "id", ascending: true)
+        request.sortDescriptors = [sort]
+          do {
+              // fetch is performed on the NSManagedObjectContext
+            let data = try self.detailContext.fetch(request)
+        
+            data[listIndex!].profile!.seen = true
+            
+                do {
+                    try self.detailContext.save()
+                } catch {
+                    print("Error setting seen")
+                }
+            }
+           
+            
+        }
+        catch {
+                print("Error fetch")
+        }
+    }
+    
     
     @IBAction func btnSave(_ sender: Any) {
         
@@ -70,12 +123,12 @@ class DetailViewController: UIViewController {
             request.sortDescriptors = [sort]
               do {
                   // fetch is performed on the NSManagedObjectContext
-                let data = try self.container.viewContext.fetch(request)
+                let data = try self.detailContext.fetch(request)
             
                 data[listIndex!].profile!.notes = notesTextView.text
                 
                     do {
-                        try self.container.viewContext.save()
+                        try self.detailContext.save()
                         
                         let alert = UIAlertController(title: "Information", message: "Note Successfully Saved!", preferredStyle: .alert)
 
@@ -110,10 +163,12 @@ class DetailViewController: UIViewController {
             if let imageData = ImageCache.loadImage(urlString) {
                 // There is image data, set the imageview and return
                 
+                //apply circular mask to the imageview
                 self.avatarImageView!.maskCircle(UIImage(data: imageData)!)
                 return
             }
-            
+            else{
+            //if no cache image load from network
             
              // Create the url
             let url = URL(string: userProfile!.avatar_url!)
@@ -140,14 +195,12 @@ class DetailViewController: UIViewController {
                        if self.userProfile!.avatar_url == urlString {
                                
                                DispatchQueue.main.async {
-                                   // Display the image data in the image view
+                                   // Display the image data in the image view, apple circular mask
                                 self.avatarImageView.maskCircle(UIImage(data: data!)!)
                                 
                                }
                         }
                                
-                           
-                           
                        } // End if
                        
                    } // End data task
@@ -155,7 +208,23 @@ class DetailViewController: UIViewController {
                    // Kick off the datatask
                    dataTask.resume()
         
+            }
     }
+        
+}
 
 
+
+
+//create a circular profile image
+extension UIImageView {
+  public func maskCircle(_ image: UIImage) {
+    self.contentMode = UIView.ContentMode.scaleAspectFill
+    self.layer.cornerRadius = self.frame.height / 2
+    self.layer.masksToBounds = false
+    self.clipsToBounds = true
+
+   self.image = image
+    self.setNeedsLayout()
+  }
 }
